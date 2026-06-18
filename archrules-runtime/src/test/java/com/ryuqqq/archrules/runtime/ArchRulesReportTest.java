@@ -20,6 +20,7 @@ class ArchRulesReportTest {
         assertTrue(md.contains("Class A depends on B"), "위반 상세 포함");
         assertTrue(md.contains("no setters"), "통과 규칙도 포함");
         assertTrue(md.contains("FAIL"), "상태 표시");
+        assertTrue(md.contains("HIGH"), "priority 표시");
     }
 
     @Test
