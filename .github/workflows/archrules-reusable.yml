@@ -4,15 +4,16 @@ on:
     inputs:
       classes-dir:
         description: '분석할 컴파일된 프로덕션 클래스 디렉토리'
-        required: true
+        required: false
+        default: 'build/classes/java/main'
         type: string
       threshold:
         description: '우선순위 게이트(HIGH|MEDIUM|LOW|none=report-only, 기본 none)'
         required: false
-        default: none
+        default: 'none'
         type: string
       rules-version:
-        description: 'archrules-platform 태그'
+        description: 'archrules-platform 버전/태그 (예: 0.1.0)'
         required: true
         type: string
 
@@ -20,31 +21,41 @@ jobs:
   archrules:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout consumer
+        uses: actions/checkout@v4
+      - name: Checkout archrules-platform (init script)
+        uses: actions/checkout@v4
+        with:
+          repository: ryu-qqq/archrules-platform
+          ref: ${{ inputs.rules-version }}
+          path: .archrules-platform
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '21'
-      # 소비 레포는 이 잡 호출 전에 자신의 클래스를 컴파일해 두어야 한다
-      # (호출 워크플로우에서 build job 산출물을 download 하거나 여기서 build 단계 추가).
-      - name: Resolve archrules runner + rules
+      - name: Compile consumer
+        run: ./gradlew classes
+      - name: Run archrules (injected init script)
         run: |
-          mkdir -p archrules-libs
-          # JitPack에서 runtime(fat)·규칙 jar 해석 — 별도 init gradle 또는 dependency fetch
-          echo "rules-version=${{ inputs.rules-version }}"
-      - name: Run archrules CLI
-        run: |
-          java -cp "archrules-libs/*" com.ryuqqq.archrules.runtime.ArchRulesCli \
-            --classes "${{ inputs.classes-dir }}" \
-            --report build/reports/archrules/report.md \
-            --threshold "${{ inputs.threshold }}"
-        # exit 2 = 규칙 0개 발견(silent-skip 가드) → 잡 실패
+          ./gradlew --init-script .archrules-platform/ci/archrules.init.gradle \
+            -ParchRulesVersion=${{ inputs.rules-version }} \
+            -ParchRulesClasses=${{ inputs.classes-dir }} \
+            -ParchRulesReport=build/reports/archrules/report.md \
+            -ParchRulesThreshold=${{ inputs.threshold }} \
+            archRulesCheck
+        # ArchRulesCli exit: 2=규칙0개(silent-skip 가드), 1=threshold 위반 → 잡 실패
       - name: Publish report to job summary
         if: always()
-        run: cat build/reports/archrules/report.md >> "$GITHUB_STEP_SUMMARY"
+        run: |
+          if [ -f build/reports/archrules/report.md ]; then
+            cat build/reports/archrules/report.md >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "archrules report 없음 (규칙 실행 실패?)" >> "$GITHUB_STEP_SUMMARY"
+          fi
       - name: Upload report artifact
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: archrules-report
           path: build/reports/archrules/report.md
+          if-no-files-found: warn
