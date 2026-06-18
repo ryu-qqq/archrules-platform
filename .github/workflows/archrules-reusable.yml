@@ -1,0 +1,50 @@
+name: archrules-reusable
+on:
+  workflow_call:
+    inputs:
+      classes-dir:
+        description: '분석할 컴파일된 프로덕션 클래스 디렉토리'
+        required: true
+        type: string
+      fail-on-violation:
+        description: 'true면 위반 발생 시 잡 실패(기본 false=report-only)'
+        required: false
+        default: false
+        type: boolean
+      rules-version:
+        description: 'archrules-platform 태그'
+        required: true
+        type: string
+
+jobs:
+  archrules:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      # 소비 레포는 이 잡 호출 전에 자신의 클래스를 컴파일해 두어야 한다
+      # (호출 워크플로우에서 build job 산출물을 download 하거나 여기서 build 단계 추가).
+      - name: Resolve archrules runner + rules
+        run: |
+          mkdir -p archrules-libs
+          # JitPack에서 runtime(fat)·규칙 jar 해석 — 별도 init gradle 또는 dependency fetch
+          echo "rules-version=${{ inputs.rules-version }}"
+      - name: Run archrules CLI
+        run: |
+          java -cp "archrules-libs/*" com.ryuqqq.archrules.runtime.ArchRulesCli \
+            --classes "${{ inputs.classes-dir }}" \
+            --report build/reports/archrules/report.md \
+            ${{ inputs.fail-on-violation && '--fail-on-violation' || '' }}
+        # exit 2 = 규칙 0개 발견(silent-skip 가드) → 잡 실패
+      - name: Publish report to job summary
+        if: always()
+        run: cat build/reports/archrules/report.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload report artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: archrules-report
+          path: build/reports/archrules/report.md
