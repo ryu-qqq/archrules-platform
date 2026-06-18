@@ -13,6 +13,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 class FreezeRunnerTest {
 
+    /** store 시스템 프로퍼티를 설정해 body를 실행하고 finally로 정리한다. body는 checked exception을 던지지 않는다. */
     private void withStore(Path dir, Runnable body) {
         System.setProperty("archunit.freeze.store.default.path", dir.toString());
         System.setProperty("archunit.freeze.store.default.allowStoreCreation", "true");
@@ -36,7 +37,9 @@ class FreezeRunnerTest {
                     "freeze 첫 실행은 기존 위반을 동결해 통과시킨다");
         });
         // store 파일이 생성됐다
-        assertTrue(Files.list(store).findAny().isPresent(), "violation store 파일 생성");
+        try (var s = Files.list(store)) {
+            assertTrue(s.findAny().isPresent(), "violation store 파일 생성");
+        }
     }
 
     @Test
