@@ -29,4 +29,18 @@ class HexagonalRulesTest {
     void frameworkCoupledDomainViolates() {
         assertTrue(Runner.check(rule, SpringCoupledDomain.class).hasViolation());
     }
+
+    @Test
+    void compliantApplicationPasses() {
+        ArchRule appRule = new HexagonalRules().getRules().get("application avoids web/persistence").rule();
+        assertFalse(Runner.check(appRule,
+                com.ryuqqq.archrules.hexagonal.fixture.compliant.application.OrderAppService.class).hasViolation());
+    }
+
+    @Test
+    void leakyApplicationViolates() {
+        ArchRule appRule = new HexagonalRules().getRules().get("application avoids web/persistence").rule();
+        assertTrue(Runner.check(appRule,
+                com.ryuqqq.archrules.hexagonal.fixture.violation.application.LeakyAppService.class).hasViolation());
+    }
 }
