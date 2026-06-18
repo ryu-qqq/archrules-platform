@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
 class HexagonalRulesTest {
 
     private final ArchRule rule =
-            new HexagonalRules().getRules().get("domain is framework-free");
+            new HexagonalRules().getRules().get("domain is framework-free").rule();
 
     @Test
     void ruleIsExposedWithName() {

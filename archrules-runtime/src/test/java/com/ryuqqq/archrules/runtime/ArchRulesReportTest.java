@@ -10,8 +10,9 @@ class ArchRulesReportTest {
     @Test
     void markdownContainsRuleSummaryAndViolations() {
         List<RuleResult> results = List.of(
-                new RuleResult("layer boundary", true, List.of("Class A depends on B")),
-                new RuleResult("no setters", false, List.of()));
+                new RuleResult("layer boundary", com.tngtech.archunit.lang.Priority.HIGH, true,
+                        List.of("Class A depends on B")),
+                new RuleResult("no setters", com.tngtech.archunit.lang.Priority.MEDIUM, false, List.of()));
 
         String md = ArchRulesReport.toMarkdown(results);
 

@@ -5,22 +5,26 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import com.tngtech.archunit.lang.ArchRule;
+import com.tngtech.archunit.lang.Priority;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 
 class ArchRulesServiceContractTest {
 
     @Test
-    void implementationReturnsNamedRules() {
+    void implementationReturnsNamedSpecsWithPriority() {
         ArchRulesService service = () -> {
             ArchRule rule = classes().should().bePublic().as("all public").because("test");
-            return Map.of("all public", rule);
+            return Map.of("all public", new ArchRuleSpec(rule, Priority.MEDIUM));
         };
 
-        Map<String, ArchRule> rules = service.getRules();
+        Map<String, ArchRuleSpec> rules = service.getRules();
 
         assertNotNull(rules);
         assertEquals(1, rules.size());
-        assertNotNull(rules.get("all public"));
+        ArchRuleSpec spec = rules.get("all public");
+        assertNotNull(spec);
+        assertNotNull(spec.rule());
+        assertEquals(Priority.MEDIUM, spec.priority());
     }
 }

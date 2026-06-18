@@ -1,7 +1,8 @@
 package com.ryuqqq.archrules.hexagonal;
 
-import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.priority;
+import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 
+import com.ryuqqq.archrules.api.ArchRuleSpec;
 import com.ryuqqq.archrules.api.ArchRulesService;
 import com.tngtech.archunit.lang.ArchRule;
 import com.tngtech.archunit.lang.Priority;
@@ -13,8 +14,7 @@ public final class HexagonalRules implements ArchRulesService {
     /** 도메인은 프레임워크 비의존(순수 자바). 운영: spring/jakarta/hibernate/jackson.
      *  self-test: 클래스패스에 있는 org.junit 을 프레임워크 프록시로 함께 본다. */
     public static final ArchRule DOMAIN_FRAMEWORK_FREE =
-            priority(Priority.HIGH)
-                    .noClasses().that().resideInAPackage("..domain..")
+            noClasses().that().resideInAPackage("..domain..")
                     .should().dependOnClassesThat()
                     .resideInAnyPackage(
                             "org.springframework..",
@@ -27,7 +27,7 @@ public final class HexagonalRules implements ArchRulesService {
                     .allowEmptyShould(true);
 
     @Override
-    public Map<String, ArchRule> getRules() {
-        return Map.of("domain is framework-free", DOMAIN_FRAMEWORK_FREE);
+    public Map<String, ArchRuleSpec> getRules() {
+        return Map.of("domain is framework-free", new ArchRuleSpec(DOMAIN_FRAMEWORK_FREE, Priority.HIGH));
     }
 }

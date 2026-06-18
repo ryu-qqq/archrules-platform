@@ -22,6 +22,7 @@ class ArchRulesRunnerTest {
         assertEquals(1, results.size());
         RuleResult r = results.get(0);
         assertEquals("no public Banned", r.ruleName());
+        assertEquals(com.tngtech.archunit.lang.Priority.HIGH, r.priority());
         assertTrue(r.hasViolation());
         assertTrue(r.violations().size() >= 1);
     }

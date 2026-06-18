@@ -1,9 +1,9 @@
 package com.ryuqqq.archrules.runtime;
 
+import com.ryuqqq.archrules.api.ArchRuleSpec;
 import com.ryuqqq.archrules.api.ArchRulesService;
 import com.tngtech.archunit.core.domain.JavaClasses;
 import com.tngtech.archunit.core.importer.ClassFileImporter;
-import com.tngtech.archunit.lang.ArchRule;
 import com.tngtech.archunit.lang.EvaluationResult;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -24,10 +24,14 @@ public final class ArchRulesRunner {
     public static List<RuleResult> run(JavaClasses classes) {
         List<RuleResult> results = new ArrayList<>();
         for (ArchRulesService service : ServiceLoader.load(ArchRulesService.class)) {
-            for (Map.Entry<String, ArchRule> entry : service.getRules().entrySet()) {
-                EvaluationResult eval = entry.getValue().evaluate(classes);
-                List<String> messages = eval.getFailureReport().getDetails();
-                results.add(new RuleResult(entry.getKey(), eval.hasViolation(), List.copyOf(messages)));
+            for (Map.Entry<String, ArchRuleSpec> entry : service.getRules().entrySet()) {
+                ArchRuleSpec spec = entry.getValue();
+                EvaluationResult eval = spec.rule().evaluate(classes);
+                results.add(new RuleResult(
+                        entry.getKey(),
+                        spec.priority(),
+                        eval.hasViolation(),
+                        List.copyOf(eval.getFailureReport().getDetails())));
             }
         }
         return results;
