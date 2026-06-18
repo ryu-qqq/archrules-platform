@@ -1,4 +1,7 @@
 subprojects {
+    group = 'com.github.ryu-qqq.archrules-platform'
+    version = findProperty('archrulesVersion') ?: '0.1.0'
+
     apply plugin: 'java-library'
     apply plugin: 'maven-publish'
 
