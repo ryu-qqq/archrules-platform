@@ -3,9 +3,9 @@
 //   -ParchRulesVersion=0.1.0 -ParchRulesClasses=build/classes/java/main \
 //   -ParchRulesThreshold=none archRulesCheck
 
-def prop = { String k, String dflt -> providers.gradleProperty(k).getOrElse(dflt) }
-
 gradle.rootProject { root ->
+    def prop = { String k, String dflt -> (root.findProperty(k) ?: dflt).toString() }
+
     def version   = prop('archRulesVersion', '0.1.0')
     def classes   = prop('archRulesClasses', 'build/classes/java/main')
     def report    = prop('archRulesReport', 'build/reports/archrules/report.md')
