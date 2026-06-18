@@ -1,0 +1,43 @@
+# archrules-platform — agent-crew 소비 설정 (OpsPilot feedback loop)
+# 폴리레포 공통 ArchUnit 규칙 플랫폼 (Nebula 스타일 경량 자체구현, 외부 빌드 의존 0)
+
+project:
+  name: archrules-platform
+  description: Polyrepo ArchUnit rules platform — SPI + runtime + rule libraries
+  stack: java
+  ide: claude-code
+
+tracking:
+  jira:
+    enabled: false
+    projectKey: ""
+  notion:
+    enabled: false
+    convention: engineering-os
+    hubPageUrl: ""
+
+knowledge:
+  mode: vault
+  vault:
+    path: /Users/ryu-qqq/Documents/ryu-qqq-wiki
+    projectPath: wiki/projects/archrules-platform
+    conventionsPath: wiki/conventions
+    rawPrefix: archrules-platform
+    git: true
+
+docs:
+  notion:
+    enabled: false
+    parentId: ""
+  adrPath: docs/adr
+
+agentCrew:
+  version: v0.15.0
+  source: git@github.com:ryu-qqq/agent-crew.git
+  syncedAt: "2026-06-18"
+  # 공통 Harness: agent-crew sync. 프로젝트 Harness: (추후) archrules 규칙 저작 스킬/에이전트.
+
+git:
+  commit:
+    requireTicket: false
+    scopesHint: [api, runtime, rules, ci, docs]
