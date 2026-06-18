@@ -1,4 +1,4 @@
 jdk:
   - openjdk21
 install:
-  - ./gradlew publishToMavenLocal -x test
+  - ./gradlew publishToMavenLocal -ParchrulesVersion=$VERSION -x test

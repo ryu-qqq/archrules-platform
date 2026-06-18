@@ -38,10 +38,10 @@ jobs:
       - name: Run archrules (injected init script)
         run: |
           ./gradlew --init-script .archrules-platform/ci/archrules.init.gradle \
-            -ParchRulesVersion=${{ inputs.rules-version }} \
-            -ParchRulesClasses=${{ inputs.classes-dir }} \
+            -ParchRulesVersion="${{ inputs.rules-version }}" \
+            -ParchRulesClasses="${{ inputs.classes-dir }}" \
             -ParchRulesReport=build/reports/archrules/report.md \
-            -ParchRulesThreshold=${{ inputs.threshold }} \
+            -ParchRulesThreshold="${{ inputs.threshold }}" \
             archRulesCheck
         # ArchRulesCli exit: 2=규칙0개(silent-skip 가드), 1=threshold 위반 → 잡 실패
       - name: Publish report to job summary

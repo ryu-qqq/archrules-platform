@@ -11,6 +11,7 @@ gradle.rootProject { root ->
     def report    = prop('archRulesReport', 'build/reports/archrules/report.md')
     def threshold = prop('archRulesThreshold', 'none')
 
+    // init-script로 주입되는 repository는 이 gradle 호출에만 적용된다(소비자 build 파일/후속 호출 비영향).
     root.repositories {
         mavenLocal()
         maven { url = 'https://jitpack.io' }

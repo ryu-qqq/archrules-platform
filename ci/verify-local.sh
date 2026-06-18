@@ -2,7 +2,7 @@
 # 로컬 엔드투엔드: mavenLocal 발행 → 샘플 소비자 컴파일 → init.gradle로 archRulesCheck.
 # report-only(exit 0)와 --threshold HIGH(exit 1) 둘 다 검증.
 set -uo pipefail
-ROOT="/Users/ryu-qqq/Documents/ryu-qqq/archrules-platform"
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 INIT="$ROOT/ci/archrules.init.gradle"
 CONSUMER="$ROOT/ci/sample-consumer"
 
