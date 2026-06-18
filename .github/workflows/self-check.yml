@@ -14,12 +14,7 @@ jobs:
       - run: ./gradlew build
       # hexagonal-rules 의 위반 픽스처에 규칙을 직접 돌려 리포트가 위반을 잡는지 증명
       - name: Run archrules on violation fixtures
-        run: |
-          ./gradlew :archrules-runtime:jar :hexagonal-rules:jar :hexagonal-rules:testClasses
-          java -cp "archrules-runtime/build/libs/*:archrules-api/build/libs/*:hexagonal-rules/build/libs/*:hexagonal-rules/build/classes/java/test" \
-            com.ryuqqq.archrules.runtime.ArchRulesCli \
-            --classes hexagonal-rules/build/classes/java/test \
-            --report build/reports/archrules/report.md
+        run: ./gradlew :hexagonal-rules:archRulesSelfCheck
       - name: Publish report
         if: always()
-        run: cat build/reports/archrules/report.md >> "$GITHUB_STEP_SUMMARY"
+        run: cat hexagonal-rules/build/reports/archrules/report.md >> "$GITHUB_STEP_SUMMARY"

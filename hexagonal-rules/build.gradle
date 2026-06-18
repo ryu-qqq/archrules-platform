@@ -5,3 +5,14 @@ dependencies {
     testImplementation libs.junit.jupiter
     testImplementation libs.archunit
 }
+
+tasks.register('archRulesSelfCheck', JavaExec) {
+    group = 'verification'
+    description = 'hexagonal-rules 규칙을 violation 픽스처(test classes)에 돌려 리포트 생성'
+    dependsOn 'testClasses'
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'com.ryuqqq.archrules.runtime.ArchRulesCli'
+    args '--classes', layout.buildDirectory.dir('classes/java/test').get().asFile.absolutePath,
+         '--report', layout.buildDirectory.file('reports/archrules/report.md').get().asFile.absolutePath
+    // report-only (no --fail-on-violation) → CLI exits 0; JavaExec succeeds.
+}
