@@ -6,11 +6,11 @@ on:
         description: '분석할 컴파일된 프로덕션 클래스 디렉토리'
         required: true
         type: string
-      fail-on-violation:
-        description: 'true면 위반 발생 시 잡 실패(기본 false=report-only)'
+      threshold:
+        description: '우선순위 게이트(HIGH|MEDIUM|LOW|none=report-only, 기본 none)'
         required: false
-        default: false
-        type: boolean
+        default: none
+        type: string
       rules-version:
         description: 'archrules-platform 태그'
         required: true
@@ -37,7 +37,7 @@ jobs:
           java -cp "archrules-libs/*" com.ryuqqq.archrules.runtime.ArchRulesCli \
             --classes "${{ inputs.classes-dir }}" \
             --report build/reports/archrules/report.md \
-            ${{ inputs.fail-on-violation && '--fail-on-violation' || '' }}
+            --threshold "${{ inputs.threshold }}"
         # exit 2 = 규칙 0개 발견(silent-skip 가드) → 잡 실패
       - name: Publish report to job summary
         if: always()
