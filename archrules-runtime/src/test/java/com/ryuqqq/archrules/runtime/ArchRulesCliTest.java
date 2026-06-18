@@ -51,6 +51,7 @@ class ArchRulesCliTest {
                 new RuleResult("h", Priority.HIGH, true, java.util.List.of("v")),
                 new RuleResult("l", Priority.LOW, true, java.util.List.of("v")));
         assertEquals(1, ArchRulesCli.gateFailures(results, Priority.HIGH));
+        assertEquals(1, ArchRulesCli.gateFailures(results, Priority.MEDIUM)); // HIGH 게이트, LOW 미게이트
         assertEquals(2, ArchRulesCli.gateFailures(results, Priority.LOW));
         assertEquals(0, ArchRulesCli.gateFailures(results, null));
     }

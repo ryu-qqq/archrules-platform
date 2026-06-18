@@ -43,4 +43,22 @@ class HexagonalRulesTest {
         assertTrue(Runner.check(appRule,
                 com.ryuqqq.archrules.hexagonal.fixture.violation.application.LeakyAppService.class).hasViolation());
     }
+
+    @Test
+    void layerDirectionViolationIsCaught() {
+        ArchRule layerRule = new HexagonalRules().getRules().get("hexagonal layer direction").rule();
+        assertTrue(Runner.check(layerRule,
+                com.ryuqqq.archrules.hexagonal.fixture.violation.layers.domain.LeakyLayerDomain.class,
+                com.ryuqqq.archrules.hexagonal.fixture.violation.layers.adapter.out.OutboundAdapter.class)
+                .hasViolation(), "domain→adapter.out 는 레이어 위반");
+    }
+
+    @Test
+    void correctLayerDirectionPasses() {
+        ArchRule layerRule = new HexagonalRules().getRules().get("hexagonal layer direction").rule();
+        assertFalse(Runner.check(layerRule,
+                com.ryuqqq.archrules.hexagonal.fixture.compliant.layers.adapter.out.CleanAdapter.class,
+                com.ryuqqq.archrules.hexagonal.fixture.compliant.layers.domain.CleanLayerDomain.class)
+                .hasViolation(), "adapter.out→domain 은 올바른 방향");
+    }
 }
