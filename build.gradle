@@ -1,0 +1,19 @@
+subprojects {
+    apply plugin: 'java-library'
+    apply plugin: 'maven-publish'
+
+    repositories { mavenCentral() }
+
+    java {
+        toolchain { languageVersion = JavaLanguageVersion.of(21) }
+        withSourcesJar()
+    }
+
+    tasks.named('test') { useJUnitPlatform() }
+
+    publishing {
+        publications {
+            maven(MavenPublication) { from components.java }
+        }
+    }
+}

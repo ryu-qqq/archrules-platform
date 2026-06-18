@@ -1,0 +1,4 @@
+rootProject.name = 'archrules-platform'
+include 'archrules-api'
+include 'archrules-runtime'
+include 'hexagonal-rules'
