@@ -14,7 +14,20 @@ public final class ArchRulesCli {
 
     public static CliOutcome execute(Path classesDir, Path reportOut, Priority threshold)
             throws Exception {
-        List<RuleResult> results = ArchRulesRunner.run(classesDir);
+        return execute(classesDir, reportOut, threshold, null);
+    }
+
+    /** baselineDir!=null이면 violation store를 그 경로에 두고 freeze(ratchet) 모드로 실행한다. */
+    public static CliOutcome execute(
+            Path classesDir, Path reportOut, Priority threshold, Path baselineDir)
+            throws Exception {
+        boolean freeze = baselineDir != null;
+        if (freeze) {
+            System.setProperty(
+                    "archunit.freeze.store.default.path", baselineDir.toAbsolutePath().toString());
+            System.setProperty("archunit.freeze.store.default.allowStoreCreation", "true");
+        }
+        List<RuleResult> results = ArchRulesRunner.run(classesDir, freeze);
         String md = ArchRulesReport.toMarkdown(results);
         if (reportOut != null) {
             Files.createDirectories(reportOut.toAbsolutePath().getParent());
@@ -45,6 +58,7 @@ public final class ArchRulesCli {
         Path classes = Path.of("build/classes/java/main");
         Path report = Path.of("build/reports/archrules/report.md");
         Priority threshold = null;
+        Path baseline = null;
         for (int i = 0; i < args.length; i++) {
             switch (args[i]) {
                 case "--classes" -> classes = Path.of(requireValue(args, i++, "--classes"));
@@ -54,10 +68,11 @@ public final class ArchRulesCli {
                     threshold = ("none".equalsIgnoreCase(v) || "null".equalsIgnoreCase(v))
                             ? null : Priority.valueOf(v.toUpperCase());
                 }
+                case "--baseline" -> baseline = Path.of(requireValue(args, i++, "--baseline"));
                 default -> { }
             }
         }
-        CliOutcome outcome = execute(classes, report, threshold);
+        CliOutcome outcome = execute(classes, report, threshold, baseline);
         System.out.println(outcome.markdown());
         System.exit(outcome.exitCode());
     }

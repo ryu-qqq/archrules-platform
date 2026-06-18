@@ -55,4 +55,19 @@ class ArchRulesCliTest {
         assertEquals(2, ArchRulesCli.gateFailures(results, Priority.LOW));
         assertEquals(0, ArchRulesCli.gateFailures(results, null));
     }
+
+    @Test
+    void baselineFirstRun_freezesViolations_andExitsZero(@TempDir Path tmp) throws Exception {
+        Path classesDir = Path.of("build/classes/java/test");
+        Path report = tmp.resolve("report.md");
+        Path baseline = tmp.resolve("archunit_store");
+
+        ArchRulesCli.CliOutcome outcome =
+                ArchRulesCli.execute(classesDir, report, Priority.HIGH, baseline);
+
+        // baseline 첫 실행: 기존 위반 동결 → 게이트(HIGH)에도 exit 0
+        assertEquals(0, outcome.exitCode(), "baseline 첫 실행은 기존 위반을 동결해 통과");
+        assertTrue(Files.exists(baseline), "violation store 디렉토리 생성");
+        assertTrue(outcome.rulesRun() >= 1, "규칙 발견");
+    }
 }
