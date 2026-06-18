@@ -129,8 +129,6 @@ java -cp <runtime+규칙 jar> com.ryuqqq.archrules.runtime.ArchRulesCli \
 2. 이후 실행: baseline과 비교해 **store에 없던 신규 위반만** threshold 게이트에 걸림
 3. store는 소비 레포가 소유하며 git에 커밋해 ratchet을 유지
 
-branchline 데이터는 JSON 형식으로 각 규칙의 위반 목록을 저장하므로, git 관리 하에 점진적 개선을 추적할 수 있다.
-
 ---
 
 ## 소비 (폴리레포 적용)
