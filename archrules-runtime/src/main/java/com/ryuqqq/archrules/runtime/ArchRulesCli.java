@@ -22,20 +22,31 @@ public final class ArchRulesCli {
             Path classesDir, Path reportOut, Priority threshold, Path baselineDir)
             throws Exception {
         boolean freeze = baselineDir != null;
+        String prevPath = null;
+        String prevAllow = null;
         if (freeze) {
+            prevPath = System.getProperty("archunit.freeze.store.default.path");
+            prevAllow = System.getProperty("archunit.freeze.store.default.allowStoreCreation");
             System.setProperty(
                     "archunit.freeze.store.default.path", baselineDir.toAbsolutePath().toString());
             System.setProperty("archunit.freeze.store.default.allowStoreCreation", "true");
         }
-        List<RuleResult> results = ArchRulesRunner.run(classesDir, freeze);
-        String md = ArchRulesReport.toMarkdown(results);
-        if (reportOut != null) {
-            Files.createDirectories(reportOut.toAbsolutePath().getParent());
-            Files.writeString(reportOut, md);
+        try {
+            List<RuleResult> results = ArchRulesRunner.run(classesDir, freeze);
+            String md = ArchRulesReport.toMarkdown(results);
+            if (reportOut != null) {
+                Files.createDirectories(reportOut.toAbsolutePath().getParent());
+                Files.writeString(reportOut, md);
+            }
+            int failures = (int) results.stream().filter(RuleResult::hasViolation).count();
+            int exit = mapExitCode(results.size(), gateFailures(results, threshold), threshold);
+            return new CliOutcome(exit, md, results.size(), failures);
+        } finally {
+            if (freeze) {
+                restoreOrClear("archunit.freeze.store.default.path", prevPath);
+                restoreOrClear("archunit.freeze.store.default.allowStoreCreation", prevAllow);
+            }
         }
-        int failures = (int) results.stream().filter(RuleResult::hasViolation).count();
-        int exit = mapExitCode(results.size(), gateFailures(results, threshold), threshold);
-        return new CliOutcome(exit, md, results.size(), failures);
     }
 
     /** threshold 이상(같거나 더 강함) priority의 위반 수. threshold null이면 0. */
@@ -84,5 +95,14 @@ public final class ArchRulesCli {
             System.exit(2);
         }
         return args[flagIndex + 1];
+    }
+
+    /** prev가 null이면 프로퍼티를 제거하고, 아니면 원래 값으로 복원한다. */
+    private static void restoreOrClear(String key, String prev) {
+        if (prev == null) {
+            System.clearProperty(key);
+        } else {
+            System.setProperty(key, prev);
+        }
     }
 }
