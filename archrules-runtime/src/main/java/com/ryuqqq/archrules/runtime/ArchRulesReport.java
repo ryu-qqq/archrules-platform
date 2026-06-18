@@ -6,6 +6,10 @@ public final class ArchRulesReport {
 
     private ArchRulesReport() {}
 
+    private static String md(String s) {
+        return s.replace("\r", " ").replace("\n", " ").replace("|", "\\|");
+    }
+
     public static String toMarkdown(List<RuleResult> results) {
         StringBuilder sb = new StringBuilder("# ArchRules Report\n\n");
         if (results.isEmpty()) {
@@ -18,7 +22,7 @@ public final class ArchRulesReport {
         sb.append("| Rule | Priority | Status | Violations |\n");
         sb.append("|------|----------|--------|------------|\n");
         for (RuleResult r : results) {
-            sb.append("| ").append(r.ruleName())
+            sb.append("| ").append(md(r.ruleName()))
               .append(" | ").append(r.priority())
               .append(" | ").append(r.hasViolation() ? "FAIL" : "PASS")
               .append(" | ").append(r.violations().size())
@@ -26,10 +30,10 @@ public final class ArchRulesReport {
         }
         for (RuleResult r : results) {
             if (!r.hasViolation()) continue;
-            sb.append("\n## ").append(r.ruleName())
+            sb.append("\n## ").append(md(r.ruleName()))
               .append(" (").append(r.priority()).append(")\n");
             for (String v : r.violations()) {
-                sb.append("- ").append(v).append("\n");
+                sb.append("- ").append(md(v)).append("\n");
             }
         }
         return sb.toString();
