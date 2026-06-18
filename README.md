@@ -112,6 +112,25 @@ java -cp <runtime+규칙 jar> com.ryuqqq.archrules.runtime.ArchRulesCli \
 
 우선순위 서열은 ArchUnit `Priority` 기준 **HIGH < MEDIUM < LOW**. threshold "이상"은 `priority.compareTo(threshold) <= 0`(같거나 더 강함). `--threshold` 없으면 위반이 있어도 빌드를 막지 않는다(report-only) — 도입 초기 채택 저항 최소화.
 
+### 브라운필드 ratchet (기존 위반 동결, 신규만 실패)
+
+기존 코드베이스의 위반을 즉시 제거할 수 없을 때, `--baseline` 플래그로 현재 위반을 "동결"하고 **신규 위반만** 규칙 게이트에 걸릴 수 있다.
+
+```bash
+java -cp <runtime+규칙 jar> com.ryuqqq.archrules.runtime.ArchRulesCli \
+  --classes  build/classes/java/main \
+  --report   build/reports/archrules/report.md \
+  --baseline .archrules/baseline \
+  --threshold HIGH
+```
+
+`--baseline <dir>`이 지정되면:
+1. 첫 실행: store 디렉토리가 없으면 **현재 위반을 baseline으로 저장**하고 통과(exit 0)
+2. 이후 실행: baseline과 비교해 **store에 없던 신규 위반만** threshold 게이트에 걸림
+3. store는 소비 레포가 소유하며 git에 커밋해 ratchet을 유지
+
+branchline 데이터는 JSON 형식으로 각 규칙의 위반 목록을 저장하므로, git 관리 하에 점진적 개선을 추적할 수 있다.
+
 ---
 
 ## 소비 (폴리레포 적용)
@@ -165,7 +184,6 @@ JitPack은 git 태그를 요청 시 빌드한다 — `com.github.ryu-qqq.archrul
 
 - **라이브 e2e**: throwaway 소비 레포 + reusable 워크플로우 Actions 실행 확인
 - **규칙 확장**: domain-rules 나머지 컨벤션 규칙 이식(aggregate is class·ctors not public·VO 필드·id record·errorcode/sortkey enum·package slices), base 클래스 설정형 규칙(예외 베이스)
-- **브라운필드**: `FreezingArchRule` baseline(기존 위반 동결·신규만 실패)
 - **운영**: org 존재 린트(모든 소비 레포가 워크플로우를 참조하는지 감사), 멀티모듈 `--classes` 지원
 
 ---
