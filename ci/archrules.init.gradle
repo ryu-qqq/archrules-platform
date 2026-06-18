@@ -1,0 +1,33 @@
+// 소비 레포 build를 수정하지 않고, --init-script 로 주입되어 archRulesCheck task를 추가한다.
+// 사용: ./gradlew --init-script ci/archrules.init.gradle \
+//   -ParchRulesVersion=0.1.0 -ParchRulesClasses=build/classes/java/main \
+//   -ParchRulesThreshold=none archRulesCheck
+
+def prop = { String k, String dflt -> providers.gradleProperty(k).getOrElse(dflt) }
+
+gradle.rootProject { root ->
+    def version   = prop('archRulesVersion', '0.1.0')
+    def classes   = prop('archRulesClasses', 'build/classes/java/main')
+    def report    = prop('archRulesReport', 'build/reports/archrules/report.md')
+    def threshold = prop('archRulesThreshold', 'none')
+
+    root.repositories {
+        mavenLocal()
+        maven { url = 'https://jitpack.io' }
+        mavenCentral()
+    }
+
+    def cp = root.configurations.create('archrulesClasspath')
+    def coord = "com.github.ryu-qqq.archrules-platform"
+    root.dependencies.add('archrulesClasspath', "${coord}:archrules-runtime:${version}")
+    root.dependencies.add('archrulesClasspath', "${coord}:hexagonal-rules:${version}")
+    root.dependencies.add('archrulesClasspath', "${coord}:domain-rules:${version}")
+
+    root.tasks.register('archRulesCheck', JavaExec) {
+        group = 'verification'
+        description = '주입된 archrules 규칙을 이 프로젝트의 컴파일된 클래스에 실행'
+        classpath = cp
+        mainClass = 'com.ryuqqq.archrules.runtime.ArchRulesCli'
+        args = ['--classes', classes, '--report', report, '--threshold', threshold]
+    }
+}
