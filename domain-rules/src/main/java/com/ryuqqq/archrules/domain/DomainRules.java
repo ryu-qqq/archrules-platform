@@ -55,6 +55,9 @@ public final class DomainRules implements ArchRulesService {
     public Map<String, ArchRuleSpec> getRules() {
         return Map.of(
                 "domain reads no clock", new ArchRuleSpec(NO_TIME_IN_DOMAIN, Priority.HIGH),
-                "domain has no setters", new ArchRuleSpec(NO_SETTERS_IN_DOMAIN, Priority.MEDIUM));
+                "domain has no setters", new ArchRuleSpec(NO_SETTERS_IN_DOMAIN, Priority.MEDIUM),
+                "domain VO is record", new ArchRuleSpec(VoRules.VO_IS_RECORD, Priority.HIGH),
+                "domain VO has static factory of", new ArchRuleSpec(VoRules.VO_HAS_OF, Priority.HIGH),
+                "domain VO has no create method", new ArchRuleSpec(VoRules.VO_NO_CREATE, Priority.MEDIUM));
     }
 }
