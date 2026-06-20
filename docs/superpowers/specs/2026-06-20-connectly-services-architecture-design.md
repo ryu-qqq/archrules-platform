@@ -27,6 +27,7 @@
 | D8 | **내부/외부 API = 코어 1개 위의 입력 어댑터 2개**(rest-internal BFF / rest-public OpenAPI). 배포 분리는 bootstrap 조립 | public DTO는 버전드, 도메인 타입 노출 금지(ACL). 같이 띄우든 따로 띄우든 어댑터 모듈은 day-one 분리 |
 | D9 | **같은 DB 인스턴스, 서비스별 스키마 분리, 크로스 JOIN 없음.** 영속 어댑터는 자기 스키마만 | 추출 = DB만 나누면 됨. 스키마 분리는 앱 마이그레이션 도구(Flyway 등) 책임 |
 | D10 | **공통 플랫폼 자산은 재사용 우선**(platform-commons-connectly / platform-bootstrap / terraform-modules). archrules는 SSOT 통합 | 3중 SSOT(ryuqqq/connectly/archrules-platform) 위험 → 본 archrules-platform로 일원화 |
+| D11 | **groupId/네이밍은 `com.connectly`로 표준화.** 단 공통 라이브러리 배포는 **GitLab → GitHub**(Packages/JitPack)로 우선 전환. 인프라는 connectly 그대로 사용 | 흩어진 서비스들이 현재 `com.ryuqqq`로 보이나 마이그레이션 때 `com.connectly`로 통일. 배포 외부만 GitHub 우선. ryuqqq로의 re-baseline은 철회 |
 
 ---
 
@@ -246,9 +247,11 @@ class InProcessProductStockAdapter implements ProductStockPort {
 
 **관계:** 중복 아님. `spring-platform-commons`(GitHub/ryuqqq, `com.ryuqqq.platform`, 14 모듈)가 인큐베이터, `platform-commons-connectly`(GitLab/connectly, `com.connectly.platform`, 6 모듈)가 `promote-module.sh`로 승격된 회사 베이스라인. 표면 넓이는 ryuqqq, 회사 정합성은 connectly.
 
+**이번 단계 방향(확정, D11):** groupId는 **`com.connectly.platform` 유지**, 단 **배포 타깃은 GitHub로 우선 전환**(GitLab 폐기). 모듈 구성은 `platform-commons-connectly`가 이미 큐레이션한 6모듈 선정을 따르되, **소스/배포 라인은 GitHub(JitPack/GitHub Packages)로 통일**한다. `spring-platform-commons`(GitHub)에서 부족분을 가져올 땐 `com.ryuqqq`→`com.connectly` 리네임 후 채택.
+
 **판정:**
-- `platform-commons-connectly` → **보완 후 사용(베이스라인).** common-domain/exception/archrules/outbox-relay/persistence-jpa는 거의 그대로 채택.
-- `spring-platform-commons` → **부분 흡수.** `platform-web`의 `RequestContextFilter`(traceId 인바운드 전파)·`ApiResponse`·error 스택, `resilient-client`(외부 호출 회복탄력성)를 선별 승격.
+- `platform-commons-connectly` → **보완 후 사용(베이스라인).** common-domain/exception/archrules/outbox-relay/persistence-jpa는 거의 그대로 채택. **배포만 GitHub로 이전.**
+- `spring-platform-commons` → **부분 흡수(리네임 채택).** `platform-web`의 `RequestContextFilter`(traceId 인바운드 전파)·`ApiResponse`·error 스택, `resilient-client`(외부 호출 회복탄력성)를 `com.connectly`로 리네임해 선별 승격.
 - `spring-platform-commons`의 `platform-security` → **흡수 금지(참고만).** `X-Service-Token` 공유시크릿 모델이 우리 **서명-JWT 설계와 충돌**.
 
 **가장 큰 공백(직접 작성 필요):** 둘 다 outbox는 **relay 골격 + `OutboxStore` SPI만** 있고 다음이 전부 없음 →
@@ -260,7 +263,7 @@ class InProcessProductStockAdapter implements ProductStockPort {
 6. connectly 쪽 **인바운드 traceId 필터 부재**(ryuqqq `RequestContextFilter`로 보완)
 
 **통합 단계:**
-1. connectly 6개 모듈을 connectly-services `platform/`·`shared-kernel`의 베이스라인으로 배치.
+1. connectly 6개 모듈을 connectly-services `platform/`·`shared-kernel`의 베이스라인으로 배치 + **GitHub 배포 라인 구성**(GitLab CI 폐기, JitPack/GitHub Packages).
 2. ryuqqq에서 `RequestContextFilter`(+web error 스택)·`resilient-client` 선별 흡수.
 3. shared-kernel에 `EventEnvelope`·`Actor` VO 신규 작성(순수 record/VO, 검증 로직 없음).
 4. `platform/outbox-core`에 DB store / SNS adapter / inbox 신규 작성(SPI 채우기) — **최대 작업**.
@@ -304,7 +307,7 @@ class InProcessProductStockAdapter implements ProductStockPort {
 1. **이벤트 인프라는 사실상 미존재** — commons의 "outbox 있음"은 착시(relay 골격+SPI만). 핵심(EventEnvelope·DB store·SNS·inbox 멱등)은 거의 신규 작성.
 2. **인증 모델 충돌** — ryuqqq `platform-security` 공유시크릿을 무비판 흡수하면 서명-JWT 설계와 어긋남. authhub 의존 유입 주의.
 3. **삼중 SSOT(archrules)** — 통합 시점 못 정하면 규칙 분기.
-4. **승격 파이프라인 종속** — connectly는 ryuqqq에서 수동 승격(`promote-module.sh`). upstream 추적/포크 단절 정책 결정 필요.
+4. **승격 파이프라인 + 배포 이전** — connectly는 ryuqqq에서 수동 승격(`promote-module.sh`). 이번에 **배포를 GitLab→GitHub로 옮기므로** 좌표(groupId 유지, 레지스트리 변경)·CI 재구성 필요. upstream(ryuqqq) 추적/포크 단절 정책도 결정.
 5. **공유 prod VPC/RDS는 ECS 16클러스터가 사용 중** — connectly-services는 기존 운영 인프라에 얹힘. 입양 리소스 `ignore_changes`(password·ingress) 깨지 말 것, 신규 서비스는 Proxy 경유.
 6. **all-in-one 1태스크 ↔ ADR 전제 재검토** — bootstrap ADR은 서비스당 1 ECS 서비스 전제. `ecs-task-definition` 다중 컨테이너 지원 여부 확인 필요(`main_container`+`sidecars[]` 구조 점검).
 7. **모듈러 모놀리식 함정** — 컨텍스트 간 직접 import 1건이라도 새면 "분산 빅머드볼"로 퇴화. C-3 규칙을 CI 첫날부터 강제.
@@ -319,5 +322,5 @@ class InProcessProductStockAdapter implements ProductStockPort {
    - (P0) `platform/outbox-core`(DB store/SNS adapter/inbox) + `shared-kernel`(EventEnvelope/Actor) 신규.
    - (P1) `platform/security-jwt` 서명 JWT 검증·주입.
    - (P1) 인프라 L2(이벤트 SNS→SQS, all-in-one ECS, ALB/gateway, 스키마 분리) wrapper.
-   - (P2) 서비스별 컨텍스트 모듈 마이그레이션(marketplace product/order/claim … 부터).
+   - (P2) 서비스별 컨텍스트 모듈 마이그레이션(marketplace product/order/claim … 부터). 이때 흩어진 서비스 패키지 `com.ryuqqq.*` → `com.connectly.*` 표준화 동반.
 3. 컨텍스트 목록 확정(marketplace 내부: product/order/claim/shipment/settlement/brand/category…)은 마이그레이션 착수 시 별도 세션.
