@@ -3,3 +3,6 @@ build/
 *.iml
 .idea/
 .vscode/
+
+# subagent-driven-development scratch (ledger/briefs)
+.superpowers/
