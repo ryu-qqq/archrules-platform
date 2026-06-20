@@ -36,4 +36,14 @@ class SharedKernelRulesTest {
         assertTrue(Runner.check(rule, LeakyKernel.class, OrderAggregate.class).hasViolation(),
                 "shared.kernel이 domain에 역의존하면 규칙에 위반되어야 한다");
     }
+
+    @Test
+    void sharedKernelDependingOnThirdPartyLayerPackageDoesNotViolate() {
+        assertFalse(
+            com.ryuqqq.archrules.runtime.Runner.check(
+                new SharedKernelRules().getRules().get("shared-kernel has no reverse dependency").rule(),
+                com.ryuqqq.archrules.sharedkernel.fixture.compliant.shared.kernel.ThirdPartyUsingKernel.class,
+                org.thirdpartylib.domain.ThirdPartyType.class).hasViolation(),
+            "서드파티 .domain 패키지 의존은 false-positive가 아니어야 한다");
+    }
 }
