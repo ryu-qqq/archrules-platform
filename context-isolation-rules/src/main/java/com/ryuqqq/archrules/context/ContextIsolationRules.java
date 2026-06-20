@@ -4,6 +4,7 @@ import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 
 import com.ryuqqq.archrules.api.ArchRuleSpec;
 import com.ryuqqq.archrules.api.ArchRulesService;
+import com.ryuqqq.archrules.common.AppPackages;
 import com.tngtech.archunit.base.DescribedPredicate;
 import com.tngtech.archunit.core.domain.Dependency;
 import com.tngtech.archunit.core.domain.JavaClass;
@@ -34,19 +35,6 @@ public final class ContextIsolationRules implements ArchRulesService {
                 }
             };
 
-    /** 패키지의 상위 2세그먼트(앱 베이스, 예: com.connectly). 세그먼트가 모자라면 그대로 반환. */
-    private static String basePackageOf(String packageName) {
-        int firstDot = packageName.indexOf('.');
-        if (firstDot < 0) {
-            return packageName;
-        }
-        int secondDot = packageName.indexOf('.', firstDot + 1);
-        if (secondDot < 0) {
-            return packageName;
-        }
-        return packageName.substring(0, secondDot);
-    }
-
     private static ArchCondition<JavaClass> notDependOnOtherContextInternals() {
         return new ArchCondition<>("다른 컨텍스트의 domain/application/internal을 직접 의존하지 않는다") {
             @Override
@@ -55,12 +43,11 @@ public final class ContextIsolationRules implements ArchRulesService {
                 if (originCtx == null) {
                     return;
                 }
-                String originBase = basePackageOf(originCtx);
                 for (Dependency dep : origin.getDirectDependenciesFromSelf()) {
                     JavaClass target = dep.getTargetClass();
                     String targetCtx = ContextKeys.contextKeyOf(target);
                     if (targetCtx == null || targetCtx.equals(originCtx)
-                            || !targetCtx.startsWith(originBase + ".")) {
+                            || !AppPackages.sameApp(originCtx, targetCtx)) {
                         continue;
                     }
                     String layer = ContextKeys.layerOf(target);
@@ -82,12 +69,11 @@ public final class ContextIsolationRules implements ArchRulesService {
                 if (originCtx == null) {
                     return;
                 }
-                String originBase = basePackageOf(originCtx);
                 for (Dependency dep : origin.getDirectDependenciesFromSelf()) {
                     JavaClass target = dep.getTargetClass();
                     String targetCtx = ContextKeys.contextKeyOf(target);
                     if (targetCtx == null || targetCtx.equals(originCtx)
-                            || !targetCtx.startsWith(originBase + ".")) {
+                            || !AppPackages.sameApp(originCtx, targetCtx)) {
                         continue;
                     }
                     if ("api".equals(ContextKeys.layerOf(target))) {
