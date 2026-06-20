@@ -1,0 +1,5 @@
+dependencies {
+    api project(':archrules-api')
+    testImplementation platform(libs.junit.bom)
+    testImplementation libs.junit.jupiter
+}
