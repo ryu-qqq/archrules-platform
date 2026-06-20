@@ -142,6 +142,14 @@ ServiceLoader 등록, 그리고 **어노테이션-프리 상대 패키지 매처
     모듈(`context-isolation-rules`)을 그대로 **유지**한다.
   - 따라서 **유일한 buy 후보는 C-3 ↔ Modulith 단 하나**이며, 그조차 PoC 게이트
     통과를 전제로 한다.
+  - **✅ PoC 결과 (2026-06-20, 게이트 종결): C-3 자작 유지(MAKE)로 확정.**
+    `poc/modulith-c3/`에서 실증 — 커스텀 `ApplicationModuleDetectionStrategy`(2단 중첩을
+    평면 모듈로) + `NamedInterfaces.builder().matching("api")`로 **어노테이션-프리 C-3 강제가
+    기술적으로 VIABLE**(성공기준 4/4 PASS, #182 사이클 부작용 **없음**). 그러나
+    `spring-modulith-core:2.1.0`이 **spring-boot:4.1.0 런타임 의존을 강제** → archrules-platform의
+    "Spring-free·어디나 드롭인"(A1) 가치와 정면 충돌. 자작 `context-isolation-rules`는 순수
+    ArchUnit·버전 독립·커스텀 메시지로 이미 동작하므로 **대체 실익 없음**. → **C-3는 자작 유지**,
+    Modulith는 "Spring Boot 4.x 프로젝트의 보조 검증 레이어"로만 후보로 남긴다.
 - **B1의 직접 귀결 — C-2 jMolecules 위임 배제:** B1(어노테이션-프리)을 택했으므로
   어노테이션을 강제하는 jMolecules `ensureHexagonal/Layering/Onion`에 **C-2(헥사고날
   레이어링)를 위임할 수 없다**. 따라서 **C-2는 자작(`hexagonal-rules`)으로 유지**한다.
@@ -172,9 +180,10 @@ ServiceLoader 등록, 그리고 **어노테이션-프리 상대 패키지 매처
 1. **false-positive 리스크**: 헥사고날을 순수 패키지 매처로 잡는 접근은 본질적으로
    false-positive에 취약하다. 이미 gemini / opus 리뷰에서 **2회 발견**되었고
    base-package 가드로 대응 중. 어노테이션-프리(B1)를 유지하는 한 상존하는 비용.
-2. **C-3 ↔ Modulith 2단 중첩 우회 미실증**: `getModuleBasePackages` SPI +
-   recursive named-interface 매칭으로 어노테이션-프리 2단 중첩을 우회할 수 있다는
-   가설은 **PoC로 검증되지 않았다**. 이슈 #182(사이클 탐지 부작용)는 알려진 sharp edge.
+2. ~~**C-3 ↔ Modulith 2단 중첩 우회 미실증**~~ **→ 해소(2026-06-20 PoC)**: 가설은
+   **VIABLE로 실증**됨(어노테이션-프리 2단 중첩 동작, #182 부작용 없음). 그러나 Modulith가
+   **spring-boot 4.x 런타임 의존을 강제**하는 비용이 드러나, buy가 아니라 **자작 유지(MAKE)로
+   확정**. 리스크가 "미실증 불확실성"에서 "Spring 결합 비용"으로 바뀌어 해소됨. (poc/modulith-c3/)
 3. **C-5/C-6/C-7 표준 미제공은 부정적 증거 기반**: Nebula/jMolecules/Modulith가 이
    영역 규칙을 제공하지 *않는다*는 사실에 근거한 자작 정당화 — "없음"의 입증은
    상대적으로 약한 근거이므로 향후 표준 등장 시 재검토 여지.
@@ -192,10 +201,9 @@ ServiceLoader 등록, 그리고 **어노테이션-프리 상대 패키지 매처
 
 1. **archrules-common 프리미티브 모듈 추출**(D1 구현) — **즉시**. base-package 가드 /
    `ContextKeys` 등 커스텀 `DescribedPredicate` / `ArchCondition`을 공용 헬퍼층으로 추출.
-2. **C-3 ↔ Modulith 2단 중첩 PoC** — **게이트**. `getModuleBasePackages` SPI +
-   `detectNamedInterfaces`(1.4+) 어노테이션-프리 우회가 이슈 #182 부작용 없이
-   `services/<svc>/<context>` 2단 중첩에서 동작하는지 검증. 통과 시에만 C-3를 Modulith로
-   대체, 실패 시 `context-isolation-rules` 자작 유지.
+2. ~~**C-3 ↔ Modulith 2단 중첩 PoC** — **게이트**~~ **✅ 완료(2026-06-20)**: VIABLE이나
+   spring-boot 4.x 결합 비용으로 **자작 유지 확정**. 게이트 종결. 산출물 `poc/modulith-c3/`
+   (+ `FINDINGS.md`). Modulith는 Spring Boot 4.x 프로젝트의 보조 검증 레이어로만 후보 잔존.
 3. **connectly-services가 엔진을 상속해 authhub 등 org 정책을 자체 정의**(E1 구현) —
    connectly 실코드가 생길 때.
 4. **archrules-platform 레포 토폴로지를 spring-platform-commons ADR-0002(repo 토폴로지)와
