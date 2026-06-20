@@ -147,7 +147,7 @@ class InProcessProductStockAdapter implements ProductStockPort {
 - 🟡 컨텍스트 넘는 원자적 쓰기 금지(다중 컨텍스트 manager를 한 `@Transactional`에 모으는 facade 금지)
 - 🟡 브로커 consumer 진입점은 멱등 처리(inbox/상태가드)를 거침
 - 🟢 이벤트 payload는 도메인 애그리거트가 아니라 published DTO
-- 🟢 이벤트는 shared-kernel `EventEnvelope`로 감쌈
+- 🔵 이벤트는 shared-kernel `EventEnvelope`로 감쌈 (행위적 규약 — "발행되는 모든 이벤트가 envelope로 감싸졌는가"는 정적으로 단언 곤란해 review-gate로 둔다)
 
 ### C-6. 영속 격리 (신규 `persistence-rules`)
 - 🟡 한 컨텍스트의 영속 어댑터는 자기 컨텍스트 테이블/스키마에만 접근
