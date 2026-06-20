@@ -61,4 +61,12 @@ class HexagonalRulesTest {
                 com.ryuqqq.archrules.hexagonal.fixture.compliant.layers.domain.CleanLayerDomain.class)
                 .hasViolation(), "adapter.out→domain 은 올바른 방향");
     }
+
+    @Test
+    void localDateTimeInDomainViolatesFrameworkFree() {
+        assertTrue(Runner.check(
+                rule,
+                com.ryuqqq.archrules.hexagonal.fixture.violation.domain.LocalDateTimeDomain.class)
+                .hasViolation());
+    }
 }

@@ -24,9 +24,12 @@ public final class HexagonalRules implements ArchRulesService {
                     .should().dependOnClassesThat()
                     .resideInAnyPackage(
                             "org.springframework..", "jakarta..", "org.hibernate..",
-                            "com.fasterxml.jackson..", "org.junit..")
+                            "com.fasterxml.jackson..", "org.junit..",
+                            "org.apache.commons..", "com.google.common..", "io.vavr..",
+                            "com.google.gson..", "org.slf4j..", "ch.qos.logback..",
+                            "org.apache.logging.log4j..", "java.time..")
                     .as("domain is framework-free")
-                    .because("도메인은 순수 자바여야 한다(프레임워크 비의존)")
+                    .because("도메인은 순수 자바여야 한다(프레임워크·유틸 라이브러리 비의존)")
                     .allowEmptyShould(true);
 
     /** application은 웹/영속 스택에 직접 의존하지 않는다. self-test: org.junit 프록시 포함. */
