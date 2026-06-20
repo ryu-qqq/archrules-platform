@@ -59,6 +59,10 @@ public final class DomainRules implements ArchRulesService {
         all.put("domain has no setters", new ArchRuleSpec(NO_SETTERS_IN_DOMAIN, Priority.MEDIUM));
         all.putAll(VoRules.rules());
         all.putAll(ConnectlyVoRules.rules());
+        all.putAll(AggregateRules.rules());
+        all.putAll(ExceptionRules.rules());
+        all.putAll(CriteriaRules.rules());
+        all.putAll(PackageRules.rules());
         return Map.copyOf(all);
     }
 }
