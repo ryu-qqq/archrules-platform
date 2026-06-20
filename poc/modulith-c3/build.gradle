@@ -1,0 +1,42 @@
+plugins {
+    id 'java'
+}
+
+group = 'com.example.poc'
+version = '0.0.1-SNAPSHOT'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // spring-modulith-core:2.1.0 은 spring-boot-autoconfigure:4.1.0 + spring-framework:7.0.8 을 요구
+    // 버전 충돌 방지: spring-boot 4.1.0 + modulith 2.1.0 조합
+    implementation 'org.springframework.boot:spring-boot-autoconfigure:4.1.0'
+    implementation 'org.springframework.boot:spring-boot:4.1.0'
+    implementation 'org.springframework:spring-context:7.0.8'
+    implementation 'org.springframework:spring-core:7.0.8'
+
+    // Spring Modulith core (ArchUnit 기반 정적 분석)
+    implementation 'org.springframework.modulith:spring-modulith-core:2.1.0'
+
+    // JUnit 5
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.11.3'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+test {
+    useJUnitPlatform()
+    testLogging {
+        events 'passed', 'failed', 'skipped'
+        showStandardStreams = true
+        showExceptions = true
+        exceptionFormat = 'full'
+    }
+}
