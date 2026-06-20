@@ -10,6 +10,8 @@ import com.ryuqqq.archrules.context.fixture.compliant.alpha.domain.AlphaAggregat
 import com.ryuqqq.archrules.context.fixture.compliant.beta.api.BetaUseCase;
 import com.ryuqqq.archrules.context.fixture.violation.alpha.application.LeakyAlphaService;
 import com.ryuqqq.archrules.context.fixture.violation.beta.domain.BetaAggregate;
+import com.ryuqqq.archrules.context.fixture.violation.delta.api.DeltaUseCase;
+import com.ryuqqq.archrules.context.fixture.violation.gamma.application.GammaUsesForeignApi;
 import com.ryuqqq.archrules.runtime.Runner;
 import com.tngtech.archunit.lang.ArchRule;
 import org.junit.jupiter.api.Test;
@@ -40,5 +42,19 @@ class ContextIsolationRulesTest {
     void applicationToForeignDomainViolates() {
         assertTrue(Runner.check(noCrossInternals, LeakyAlphaService.class, BetaAggregate.class)
                 .hasViolation(), "application→다른 컨텍스트 domain 은 위반");
+    }
+
+    @Test
+    void coreToForeignApiViolates() {
+        ArchRule rule = new ContextIsolationRules().getRules().get("core blind to foreign api").rule();
+        assertTrue(Runner.check(rule, GammaUsesForeignApi.class, DeltaUseCase.class)
+                .hasViolation(), "application→다른 컨텍스트 .api 는 위반(코어는 자기 포트만)");
+    }
+
+    @Test
+    void bridgeAdapterToForeignApiPassesCoreRule() {
+        ArchRule rule = new ContextIsolationRules().getRules().get("core blind to foreign api").rule();
+        assertFalse(Runner.check(rule, AlphaToBetaBridge.class, BetaUseCase.class)
+                .hasViolation(), "어댑터는 다른 컨텍스트 .api 의존 허용");
     }
 }
