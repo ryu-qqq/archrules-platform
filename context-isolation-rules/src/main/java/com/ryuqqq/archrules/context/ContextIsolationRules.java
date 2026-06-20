@@ -1,0 +1,66 @@
+package com.ryuqqq.archrules.context;
+
+import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
+
+import com.ryuqqq.archrules.api.ArchRuleSpec;
+import com.ryuqqq.archrules.api.ArchRulesService;
+import com.tngtech.archunit.base.DescribedPredicate;
+import com.tngtech.archunit.core.domain.Dependency;
+import com.tngtech.archunit.core.domain.JavaClass;
+import com.tngtech.archunit.lang.ArchCondition;
+import com.tngtech.archunit.lang.ArchRule;
+import com.tngtech.archunit.lang.ConditionEvents;
+import com.tngtech.archunit.lang.Priority;
+import com.tngtech.archunit.lang.SimpleConditionEvent;
+import java.util.Map;
+
+/** 컨텍스트 격리 규칙(C-3) — 상대 매처, root 무관. */
+public final class ContextIsolationRules implements ArchRulesService {
+
+    private static final DescribedPredicate<JavaClass> BELONGS_TO_CONTEXT =
+            new DescribedPredicate<>("컨텍스트에 속한 클래스") {
+                @Override
+                public boolean test(JavaClass clazz) {
+                    return ContextKeys.contextKeyOf(clazz) != null;
+                }
+            };
+
+    private static ArchCondition<JavaClass> notDependOnOtherContextInternals() {
+        return new ArchCondition<>("다른 컨텍스트의 domain/application/internal을 직접 의존하지 않는다") {
+            @Override
+            public void check(JavaClass origin, ConditionEvents events) {
+                String originCtx = ContextKeys.contextKeyOf(origin);
+                if (originCtx == null) {
+                    return;
+                }
+                for (Dependency dep : origin.getDirectDependenciesFromSelf()) {
+                    JavaClass target = dep.getTargetClass();
+                    String targetCtx = ContextKeys.contextKeyOf(target);
+                    if (targetCtx == null || targetCtx.equals(originCtx)) {
+                        continue;
+                    }
+                    String layer = ContextKeys.layerOf(target);
+                    if ("domain".equals(layer) || "application".equals(layer) || "internal".equals(layer)) {
+                        events.add(SimpleConditionEvent.violated(origin,
+                                origin.getName() + " → " + target.getName()
+                                        + " (다른 컨텍스트 " + layer + " 직접 의존)"));
+                    }
+                }
+            }
+        };
+    }
+
+    public static final ArchRule NO_CROSS_CONTEXT_INTERNALS =
+            classes().that(BELONGS_TO_CONTEXT)
+                    .should(notDependOnOtherContextInternals())
+                    .as("no cross-context internals")
+                    .because("컨텍스트는 다른 컨텍스트의 domain/application/internal을 직접 의존하지 않는다 (교차는 .api/이벤트로만)")
+                    .allowEmptyShould(true);
+
+    @Override
+    public Map<String, ArchRuleSpec> getRules() {
+        return Map.of(
+                "no cross-context internals",
+                new ArchRuleSpec(NO_CROSS_CONTEXT_INTERNALS, Priority.HIGH));
+    }
+}
