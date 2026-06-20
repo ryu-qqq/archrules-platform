@@ -60,4 +60,14 @@ class SecurityBoundaryRulesTest {
                 Runner.check(publicAdapterRule, LeakyResponse.class, OrderAggregate.class).hasViolation(),
                 "public 어댑터가 도메인 타입을 노출하면 위반");
     }
+
+    @Test
+    void publicAdapterDependingOnThirdPartyDomainPackageDoesNotViolate() {
+        ArchRule rule = new SecurityBoundaryRules().getRules().get("public adapter exposes no domain").rule();
+        assertFalse(
+            com.ryuqqq.archrules.runtime.Runner.check(rule,
+                com.ryuqqq.archrules.security.fixture.compliant.orderctx.adapter.in.publicapi.ThirdPartyUsingResponse.class,
+                org.thirdpartylib.domain.ThirdPartyType.class).hasViolation(),
+            "서드파티 .domain 패키지(예: org.springframework.data.domain) 의존은 false-positive가 아니어야 한다");
+    }
 }
