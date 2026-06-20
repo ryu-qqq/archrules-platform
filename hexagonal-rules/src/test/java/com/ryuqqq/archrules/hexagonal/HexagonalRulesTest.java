@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.ryuqqq.archrules.hexagonal.fixture.compliant.domain.InstantDomain;
 import com.ryuqqq.archrules.hexagonal.fixture.compliant.domain.OrderId;
 import com.ryuqqq.archrules.hexagonal.fixture.violation.domain.SpringCoupledDomain;
 import com.ryuqqq.archrules.runtime.Runner;
@@ -68,5 +69,11 @@ class HexagonalRulesTest {
                 rule,
                 com.ryuqqq.archrules.hexagonal.fixture.violation.domain.LocalDateTimeDomain.class)
                 .hasViolation());
+    }
+
+    @Test
+    void instantFieldInDomainPassesFrameworkFree() {
+        // Instant는 aggregate의 createdAt/updatedAt 의무 필드 — framework-free를 통과해야 한다.
+        assertFalse(Runner.check(rule, InstantDomain.class).hasViolation());
     }
 }

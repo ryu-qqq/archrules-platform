@@ -6,6 +6,7 @@ import static com.tngtech.archunit.library.Architectures.layeredArchitecture;
 import com.ryuqqq.archrules.api.ArchRuleSpec;
 import com.ryuqqq.archrules.api.ArchRulesService;
 import com.tngtech.archunit.lang.ArchRule;
+import com.tngtech.archunit.lang.CompositeArchRule;
 import com.tngtech.archunit.lang.Priority;
 import java.util.Map;
 
@@ -18,19 +19,27 @@ public final class HexagonalRules implements ArchRulesService {
     private static final String ADAPTER_OUT = "..adapter.out..";
     private static final String BOOTSTRAP = "..bootstrap..";
 
-    /** 도메인은 프레임워크 비의존. self-test: org.junit 프록시 포함. */
+    /**
+     * 도메인은 프레임워크 비의존. self-test: org.junit 프록시 포함.
+     * java.time.LocalDateTime은 타임존 없는 안티패턴이므로 금지; Instant는 aggregate 의무 필드라 허용.
+     */
     public static final ArchRule DOMAIN_FRAMEWORK_FREE =
-            noClasses().that().resideInAPackage(DOMAIN)
-                    .should().dependOnClassesThat()
-                    .resideInAnyPackage(
-                            "org.springframework..", "jakarta..", "org.hibernate..",
-                            "com.fasterxml.jackson..", "org.junit..",
-                            "org.apache.commons..", "com.google.common..", "io.vavr..",
-                            "com.google.gson..", "org.slf4j..", "ch.qos.logback..",
-                            "org.apache.logging.log4j..", "java.time..")
+            CompositeArchRule.of(
+                    noClasses().that().resideInAPackage(DOMAIN)
+                            .should().dependOnClassesThat()
+                            .resideInAnyPackage(
+                                    "org.springframework..", "jakarta..", "org.hibernate..",
+                                    "com.fasterxml.jackson..", "org.junit..",
+                                    "org.apache.commons..", "com.google.common..", "io.vavr..",
+                                    "com.google.gson..", "org.slf4j..", "ch.qos.logback..",
+                                    "org.apache.logging.log4j..")
+                            .allowEmptyShould(true))
+                    .and(noClasses().that().resideInAPackage(DOMAIN)
+                            .should().dependOnClassesThat()
+                            .haveFullyQualifiedName("java.time.LocalDateTime")
+                            .allowEmptyShould(true))
                     .as("domain is framework-free")
-                    .because("도메인은 순수 자바여야 한다(프레임워크·유틸 라이브러리 비의존)")
-                    .allowEmptyShould(true);
+                    .because("도메인은 순수 자바여야 한다(프레임워크·유틸 라이브러리 비의존; LocalDateTime은 타임존 없는 안티패턴이므로 금지, Instant는 허용)");
 
     /** application은 웹/영속 스택에 직접 의존하지 않는다. self-test: org.junit 프록시 포함. */
     public static final ArchRule APPLICATION_NO_WEB_OR_PERSISTENCE =
