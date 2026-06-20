@@ -134,6 +134,7 @@ class InProcessProductStockAdapter implements ProductStockPort {
 - 🟢 컨텍스트 간 소통은 B의 `*-api`(port-in) 또는 도메인 이벤트로만
 - 🟢 다리(bridge) 어댑터만 양쪽(`A-application` + `B-api`)을 알 수 있음 — 그 외 위치 금지
 - 🟢 생산자 `*-api` 모듈엔 인터페이스+DTO만(구현/도메인/JPA 없음)
+- **네이밍 제약(C-3 전제):** 컨텍스트/서비스 패키지 세그먼트는 레이어 마커 단어(domain/application/api/adapter/internal)를 이름으로 쓰지 않는다. 다리 어댑터는 반드시 `.adapter` 패키지 아래 둔다 — 그래야 격리 규칙이 그 클래스를 검사한다.
 
 ### C-4. 인증/인가 (신규 `security-boundary-rules`)
 - 🟢 어떤 컨텍스트도 authhub 의존 금지(gateway만)

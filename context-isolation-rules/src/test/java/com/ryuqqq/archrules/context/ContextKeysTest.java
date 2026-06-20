@@ -39,4 +39,13 @@ class ContextKeysTest {
         assertEquals("api", ContextKeys.layerOf("com.x.alpha.api.port"));
         assertNull(ContextKeys.layerOf("com.x.shared.vo"));
     }
+
+    @Test
+    void markerWordsAreReserved_documentingKnownTruncation() {
+        // 컨텍스트/서비스 세그먼트를 마커 단어로 이름지으면 키가 거기서 끊긴다 — 예약어 가정의 근거.
+        assertEquals("com.connectly.fileflow",
+                ContextKeys.contextKeyOf("com.connectly.fileflow.api.application.svc"));
+        assertEquals("api",
+                ContextKeys.layerOf("com.connectly.fileflow.api.application.svc"));
+    }
 }

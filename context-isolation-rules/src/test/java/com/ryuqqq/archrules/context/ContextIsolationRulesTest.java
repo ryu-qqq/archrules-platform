@@ -11,7 +11,9 @@ import com.ryuqqq.archrules.context.fixture.compliant.beta.api.BetaUseCase;
 import com.ryuqqq.archrules.context.fixture.violation.alpha.application.LeakyAlphaService;
 import com.ryuqqq.archrules.context.fixture.violation.beta.domain.BetaAggregate;
 import com.ryuqqq.archrules.context.fixture.violation.delta.api.DeltaUseCase;
+import com.ryuqqq.archrules.context.fixture.violation.epsilon.internal.EpsilonInternal;
 import com.ryuqqq.archrules.context.fixture.violation.gamma.application.GammaUsesForeignApi;
+import com.ryuqqq.archrules.context.fixture.violation.zeta.application.ZetaUsesForeignInternal;
 import com.ryuqqq.archrules.runtime.Runner;
 import com.tngtech.archunit.lang.ArchRule;
 import org.junit.jupiter.api.Test;
@@ -42,6 +44,12 @@ class ContextIsolationRulesTest {
     void applicationToForeignDomainViolates() {
         assertTrue(Runner.check(noCrossInternals, LeakyAlphaService.class, BetaAggregate.class)
                 .hasViolation(), "application→다른 컨텍스트 domain 은 위반");
+    }
+
+    @Test
+    void applicationToForeignInternalViolates() {
+        assertTrue(Runner.check(noCrossInternals, ZetaUsesForeignInternal.class, EpsilonInternal.class)
+                .hasViolation(), "application→다른 컨텍스트 internal 은 위반");
     }
 
     @Test
