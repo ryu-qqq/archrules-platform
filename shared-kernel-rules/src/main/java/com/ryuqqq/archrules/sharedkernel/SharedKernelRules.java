@@ -8,7 +8,13 @@ import com.tngtech.archunit.lang.ArchRule;
 import com.tngtech.archunit.lang.Priority;
 import java.util.Map;
 
-/** 공유 커널 경계 규칙 — root 패키지 무관(상대 매처). */
+/**
+ * 공유 커널 경계 규칙 — root 패키지 무관(상대 매처).
+ *
+ * <p>주의: 금지 타깃 {@code ..domain..}/{@code ..application..}/{@code ..adapter..}/{@code ..bootstrap..}는 상대 매처라,
+ * 전체 클래스패스 실행 시 같은 세그먼트를 가진 서드파티 패키지를 오인할 수 있다(특히 {@code ..adapter..}).
+ * base-package 가드 일괄 적용은 후속 과제(cf. context-isolation-rules).
+ */
 public final class SharedKernelRules implements ArchRulesService {
 
     /**

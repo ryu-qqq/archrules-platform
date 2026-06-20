@@ -20,7 +20,7 @@ import java.util.Map;
  * <ul>
  *   <li>transactional outbox (애그리거트 + outbox 한 tx)</li>
  *   <li>멱등 consumer (inbox)</li>
- *   <li>EventEnvelope 감싸기</li>
+ *   <li>EventEnvelope 감싸기 — "발행되는 모든 이벤트가 envelope로 감싸졌는가"는 행위적 규약이라 정적 단언 곤란(스펙 §4 C-5, 🔵)</li>
  * </ul>
  */
 public final class MessagingRules implements ArchRulesService {

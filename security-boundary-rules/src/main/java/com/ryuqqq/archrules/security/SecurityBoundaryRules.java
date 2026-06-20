@@ -8,7 +8,12 @@ import com.tngtech.archunit.lang.ArchRule;
 import com.tngtech.archunit.lang.Priority;
 import java.util.Map;
 
-/** 보안 경계 규칙 — root 패키지 무관(상대 매처). */
+/**
+ * 보안 경계 규칙 — root 패키지 무관(상대 매처).
+ *
+ * <p>주의: {@code public adapter exposes no domain}의 타깃 {@code ..domain..}은 상대 매처라 서드파티 패키지 오인 여지가 있다.
+ * base-package 가드 일괄 적용은 후속 과제(cf. context-isolation-rules).
+ */
 public final class SecurityBoundaryRules implements ArchRulesService {
 
     /**
