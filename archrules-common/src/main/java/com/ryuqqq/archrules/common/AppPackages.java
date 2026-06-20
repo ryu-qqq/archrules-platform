@@ -21,8 +21,12 @@ public final class AppPackages {
         return second < 0 ? packageName : packageName.substring(0, second);
     }
 
-    /** target이 origin과 같은 앱 베이스 프리픽스를 공유하는가. 서드파티 제외용. */
-    public static boolean sameApp(String originPackage, String targetPackage) {
-        return targetPackage.startsWith(baseOf(originPackage) + ".");
+    /**
+     * target이 origin과 같은 앱 베이스 프리픽스를 공유하는가. 서드파티 제외용.
+     *
+     * <p>인자는 풀 패키지명 또는 그 프리픽스(컨텍스트 키)를 받아도 된다 — 상위 2세그먼트만 보므로 동일하게 동작한다.
+     */
+    public static boolean sameApp(String originPackageOrKey, String targetPackageOrKey) {
+        return targetPackageOrKey.startsWith(baseOf(originPackageOrKey) + ".");
     }
 }
