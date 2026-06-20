@@ -8,6 +8,8 @@ import com.ryuqqq.archrules.context.fixture.compliant.alpha.adapter.AlphaToBetaB
 import com.ryuqqq.archrules.context.fixture.compliant.alpha.application.AlphaService;
 import com.ryuqqq.archrules.context.fixture.compliant.alpha.domain.AlphaAggregate;
 import com.ryuqqq.archrules.context.fixture.compliant.beta.api.BetaUseCase;
+import com.ryuqqq.archrules.context.fixture.compliant.theta.adapter.ThetaUsesThirdPartyInternal;
+import com.ryuqqq.archrules.context.fixture.compliant.theta.application.ThetaCoreUsesThirdPartyApi;
 import com.ryuqqq.archrules.context.fixture.violation.alpha.application.LeakyAlphaService;
 import com.ryuqqq.archrules.context.fixture.violation.beta.domain.BetaAggregate;
 import com.ryuqqq.archrules.context.fixture.violation.delta.api.DeltaUseCase;
@@ -16,6 +18,8 @@ import com.ryuqqq.archrules.context.fixture.violation.gamma.application.GammaUse
 import com.ryuqqq.archrules.context.fixture.violation.zeta.application.ZetaUsesForeignInternal;
 import com.ryuqqq.archrules.runtime.Runner;
 import com.tngtech.archunit.lang.ArchRule;
+import org.fakelib.api.FakeApi;
+import org.fakelib.internal.FakeInternal;
 import org.junit.jupiter.api.Test;
 
 class ContextIsolationRulesTest {
@@ -64,5 +68,18 @@ class ContextIsolationRulesTest {
         ArchRule rule = new ContextIsolationRules().getRules().get("core blind to foreign api").rule();
         assertFalse(Runner.check(rule, AlphaToBetaBridge.class, BetaUseCase.class)
                 .hasViolation(), "어댑터는 다른 컨텍스트 .api 의존 허용");
+    }
+
+    @Test
+    void thirdPartyInternalDependencyDoesNotViolate() {
+        assertFalse(Runner.check(noCrossInternals, ThetaUsesThirdPartyInternal.class, FakeInternal.class)
+                .hasViolation(), "서드파티 .internal 패키지 의존은 false-positive가 아니어야 한다");
+    }
+
+    @Test
+    void thirdPartyApiDependencyDoesNotViolateCore() {
+        ArchRule rule = new ContextIsolationRules().getRules().get("core blind to foreign api").rule();
+        assertFalse(Runner.check(rule, ThetaCoreUsesThirdPartyApi.class, FakeApi.class)
+                .hasViolation(), "코어의 서드파티 .api 패키지 의존은 false-positive가 아니어야 한다");
     }
 }
