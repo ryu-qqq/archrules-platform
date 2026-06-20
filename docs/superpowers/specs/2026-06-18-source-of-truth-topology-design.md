@@ -48,6 +48,10 @@ archrules가 그 안에도 모듈로 들어가 있어 경계가 흐려져 있었
 
 4. **connectly-services가 흩어진 서비스의 통합 종착지(모노레포)이며, archrules의 첫 실소비자다.**
 
+5. **(2026-06-19 갱신) 규칙 라이브러리는 보편/특화를 모듈로 분리하지 않는다.**
+   - 당초 #2 첫 슬라이스에서 connectly 특화 규칙을 `connectly-domain-rules` 별도 모듈로 분리했으나, 사용자 결정으로 번복. 특화 규칙도 `domain-rules` 한 모듈에 둔다(보편/특화 구분은 코드 레벨에서만 유지).
+   - 함의: archrules-platform을 **사실상 connectly 전용 플랫폼**으로 본다. "이식 가능"은 상대 매처(root 무관) 수준에서만 유지. 상세: [[2026-06-19-domain-rules-categories-design]].
+
 ---
 
 ## 3. 정본 지도 (Target Topology)
