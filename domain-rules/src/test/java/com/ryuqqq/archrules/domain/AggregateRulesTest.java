@@ -13,12 +13,12 @@ import com.ryuqqq.archrules.domain.fixture.violation.domain.aggregate.NoReconsti
 import com.ryuqqq.archrules.domain.fixture.violation.domain.aggregate.NonFinalCreatedAtAggregate;
 import com.ryuqqq.archrules.domain.fixture.violation.domain.aggregate.NonFinalIdAggregate;
 import com.ryuqqq.archrules.domain.fixture.violation.domain.aggregate.OuterLayerDependentAggregate;
+import com.ryuqqq.archrules.domain.fixture.violation.domain.aggregate.PackagePrivateAggregateAccess;
 import com.ryuqqq.archrules.domain.fixture.violation.domain.aggregate.PrimitiveForeignKeyAggregate;
 import com.ryuqqq.archrules.domain.fixture.violation.domain.aggregate.PublicConstructorAggregate;
 import com.ryuqqq.archrules.domain.fixture.violation.domain.aggregate.WithSetterAggregate;
 import com.ryuqqq.archrules.domain.fixture.violation.domain.aggregate.application.ApplicationService;
 import com.ryuqqq.archrules.runtime.Runner;
-import com.tngtech.archunit.core.importer.ClassFileImporter;
 import com.tngtech.archunit.lang.ArchRule;
 import org.junit.jupiter.api.Test;
 
@@ -107,11 +107,7 @@ class AggregateRulesTest {
 
     @Test
     void packagePrivateViolatesPublicRule() {
-        // package-private 클래스는 다른 패키지에서 .class 리터럴로 참조 불가
-        // → ClassFileImporter로 픽스처 패키지를 경로 기반으로 로드
-        var classes = new ClassFileImporter().importPackages(
-                "com.ryuqqq.archrules.domain.fixture.violation.domain.aggregate");
-        assertTrue(rule("aggregate is public").evaluate(classes).hasViolation());
+        assertTrue(Runner.check(rule("aggregate is public"), PackagePrivateAggregateAccess.target()).hasViolation());
     }
 
     // ===== 규칙 14: final 금지 =====
