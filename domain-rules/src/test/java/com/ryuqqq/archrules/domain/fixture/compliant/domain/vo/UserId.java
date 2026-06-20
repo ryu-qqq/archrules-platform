@@ -1,4 +1,4 @@
-package com.ryuqqq.archrules.connectly.fixture.compliant.domain.vo;
+package com.ryuqqq.archrules.domain.fixture.compliant.domain.vo;
 
 /** Long ID VO — forNew()/isNew() 보유 → forNew·isNew 규칙 통과. */
 public record UserId(Long value) {

@@ -1,21 +1,20 @@
-package com.ryuqqq.archrules.connectly;
+package com.ryuqqq.archrules.domain;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.ryuqqq.archrules.connectly.fixture.compliant.domain.vo.Color;
-import com.ryuqqq.archrules.connectly.fixture.compliant.domain.vo.UserId;
-import com.ryuqqq.archrules.connectly.fixture.violation.domain.vo.NoForNewId;
-import com.ryuqqq.archrules.connectly.fixture.violation.domain.vo.NoIsNewId;
-import com.ryuqqq.archrules.connectly.fixture.violation.domain.vo.PlainStatus;
+import com.ryuqqq.archrules.domain.fixture.compliant.domain.vo.Color;
+import com.ryuqqq.archrules.domain.fixture.compliant.domain.vo.UserId;
+import com.ryuqqq.archrules.domain.fixture.violation.domain.vo.NoForNewId;
+import com.ryuqqq.archrules.domain.fixture.violation.domain.vo.NoIsNewId;
+import com.ryuqqq.archrules.domain.fixture.violation.domain.vo.PlainStatus;
 import com.ryuqqq.archrules.runtime.Runner;
 import com.tngtech.archunit.lang.ArchRule;
 import org.junit.jupiter.api.Test;
 
-class ConnectlyDomainRulesTest {
+class ConnectlyVoRulesTest {
 
-    private final ConnectlyDomainRules svc = new ConnectlyDomainRules();
-    private ArchRule rule(String key) { return svc.getRules().get(key).rule(); }
+    private ArchRule rule(String key) { return ConnectlyVoRules.rules().get(key).rule(); }
 
     @Test
     void compliantIdAndEnumPass() {

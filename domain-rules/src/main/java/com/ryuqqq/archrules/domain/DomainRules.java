@@ -9,6 +9,7 @@ import com.tngtech.archunit.base.DescribedPredicate;
 import com.tngtech.archunit.core.domain.JavaMethodCall;
 import com.tngtech.archunit.lang.ArchRule;
 import com.tngtech.archunit.lang.Priority;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -53,11 +54,11 @@ public final class DomainRules implements ArchRulesService {
 
     @Override
     public Map<String, ArchRuleSpec> getRules() {
-        return Map.of(
-                "domain reads no clock", new ArchRuleSpec(NO_TIME_IN_DOMAIN, Priority.HIGH),
-                "domain has no setters", new ArchRuleSpec(NO_SETTERS_IN_DOMAIN, Priority.MEDIUM),
-                "domain VO is record", new ArchRuleSpec(VoRules.VO_IS_RECORD, Priority.HIGH),
-                "domain VO has static factory of", new ArchRuleSpec(VoRules.VO_HAS_OF, Priority.HIGH),
-                "domain VO has no create method", new ArchRuleSpec(VoRules.VO_NO_CREATE, Priority.MEDIUM));
+        Map<String, ArchRuleSpec> all = new HashMap<>();
+        all.put("domain reads no clock", new ArchRuleSpec(NO_TIME_IN_DOMAIN, Priority.HIGH));
+        all.put("domain has no setters", new ArchRuleSpec(NO_SETTERS_IN_DOMAIN, Priority.MEDIUM));
+        all.putAll(VoRules.rules());
+        all.putAll(ConnectlyVoRules.rules());
+        return Map.copyOf(all);
     }
 }
